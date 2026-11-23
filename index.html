@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Studio">
+<meta name="theme-color" content="#EFEAFB">
+<title>Timer di studio</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icone/icon-180.png">
+<link rel="icon" type="image/png" href="icone/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EFEAFB;--surface:#FFFFFF;--ink:#2B2140;--muted:#7A6F94;--primary:#6E56CF;--run:#3FBF93;--soft:#E3DBF7;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#1D1730;--surface:#2A2342;--ink:#F1EDFB;--muted:#A59BC4;--primary:#9B86F0;--run:#5ED6AE;--soft:#382F57;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1D1730;--surface:#2A2342;--ink:#F1EDFB;--muted:#A59BC4;--primary:#9B86F0;--run:#5ED6AE;--soft:#382F57;color-scheme:dark}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:Nunito,system-ui,sans-serif;font-weight:500;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+main{max-width:460px;margin:0 auto;padding:22px 20px 48px}
+.top{display:flex;justify-content:space-between;align-items:center}
+.app{font-family:Fredoka,system-ui,sans-serif;font-weight:600;font-size:18px;color:var(--primary);margin:0}
+.logout{background:none;color:var(--muted);font-weight:700;padding:6px 4px}
+.day{margin:6px 0 0;color:var(--muted);font-weight:700;text-transform:capitalize}
+.ring{position:relative;width:min(78vw,300px);aspect-ratio:1;margin:22px auto}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:12}
+.track{stroke:var(--soft)}
+.prog{stroke:var(--primary);stroke-linecap:round;stroke-dasharray:553;stroke-dashoffset:553;transition:stroke .3s}
+.prog.run{stroke:var(--run)}
+.center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.time{font-family:Fredoka,system-ui,sans-serif;font-weight:600;font-size:clamp(40px,13vw,58px);font-variant-numeric:tabular-nums;line-height:1}
+.state{margin-top:8px;color:var(--muted);font-weight:700}
+button{font:inherit;cursor:pointer;border:0}
+button:focus-visible,input:focus-visible{outline:3px solid var(--primary);outline-offset:3px}
+.main{width:100%;height:64px;border-radius:32px;background:var(--primary);color:#fff;font-family:Fredoka,system-ui,sans-serif;font-weight:600;font-size:21px}
+.main.pause{background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 2px var(--primary)}
+.main:disabled{opacity:.6}
+.row{display:flex;gap:10px;margin-top:12px}
+.sec{flex:1;height:48px;border-radius:24px;background:var(--soft);color:var(--ink);font-weight:700}
+.sec.go{background:var(--primary);color:#fff}
+.note{margin:12px 4px 0;color:var(--muted);font-size:14px;text-align:center}
+h1{font-family:Fredoka,system-ui,sans-serif;font-weight:600;font-size:34px;margin:56px 0 8px}
+h2{font-family:Fredoka,system-ui,sans-serif;font-weight:600;font-size:20px;margin:36px 4px 12px}
+.lead{color:var(--muted);margin:0 0 24px}
+input{width:100%;box-sizing:border-box;height:54px;border-radius:16px;border:2px solid var(--soft);background:var(--surface);color:var(--ink);padding:0 16px;font:inherit;margin-bottom:10px}
+.err{color:#D1495B;font-weight:700;min-height:22px;margin:4px 4px 12px}
+.err.info{color:var(--ink)}
+.switch{display:block;margin:18px auto 0;background:none;color:var(--primary);font-weight:700;padding:8px}
+ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+li{display:flex;justify-content:space-between;align-items:center;background:var(--surface);border-radius:18px;padding:14px 18px}
+li .d{text-transform:capitalize}
+li .t{font-family:Fredoka,system-ui,sans-serif;font-weight:600;color:var(--primary)}
+.empty{color:var(--muted);margin:0 4px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:20px;font-weight:700;max-width:90vw;text-align:center}
+@media (prefers-reduced-motion: reduce){.prog{transition:none}}
+</style>
+</head>
+<body>
+<main>
+  <section id="loginView" hidden>
+    <h1 id="authTitle">Timer di studio</h1>
+    <p class="lead" id="authLead">Accedi con l’email e la password che usi anche per la libreria.</p>
+    <form id="loginForm">
+      <input id="email" type="email" autocomplete="username" placeholder="Email" required>
+      <input id="pw" type="password" autocomplete="current-password" placeholder="Password" required>
+      <input id="pw2" type="password" autocomplete="new-password" placeholder="Ripeti la password" hidden>
+      <p class="err" id="err" role="alert"></p>
+      <button class="main" id="loginBtn" type="submit">Accedi</button>
+      <button class="switch" id="switchMode" type="button">Non hai un account? Registrati</button>
+    </form>
+  </section>
+
+  <section id="appView" hidden>
+    <div class="top"><p class="app">Timer di studio</p><button class="logout" id="logout">Esci</button></div>
+    <p class="day" id="day"></p>
+    <div class="ring">
+      <svg viewBox="0 0 200 200" aria-hidden="true">
+        <circle class="track" cx="100" cy="100" r="88"/>
+        <circle class="prog" id="prog" cx="100" cy="100" r="88"/>
+      </svg>
+      <div class="center"><div class="time" id="time">0:00:00</div><div class="state" id="state"></div></div>
+    </div>
+    <button class="main" id="btn"></button>
+    <div class="row" id="finish" hidden><button class="sec" id="finishBtn">Azzera e salva</button></div>
+    <div class="row" id="confirm" hidden>
+      <button class="sec" id="no">Annulla</button>
+      <button class="sec go" id="yes">Sì, azzera</button>
+    </div>
+    <p class="note" id="note" hidden></p>
+    <h2>Storico</h2>
+    <ul id="history"></ul>
+  </section>
+</main>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+const SB_URL = "https://sbxamhfvxscyiunnwnlh.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNieGFtaGZ2eHNjeWl1bm53bmxoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ5NTc1MTIsImV4cCI6MjExMDUzMzUxMn0._3G5zfe3QfEwFXOZMSxNhTsA6W6K3jnJH5Zvia33gTQ";
+const sb = supabase.createClient(SB_URL, SB_KEY);
+const C = 553;
+let user = null, state = { day: null, history: [] }, confirming = false, busy = false, toastT;
+
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2, "0");
+const todayKey = () => { const d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); };
+const parseKey = k => { const [y, m, d] = k.split("-").map(Number); return new Date(y, m - 1, d); };
+const fmtDay = (d, long) => d.toLocaleDateString("it-IT", long ? { weekday: "long", day: "numeric", month: "long" } : { weekday: "short", day: "numeric", month: "short" });
+const elapsed = () => { const d = state.day; return d ? d.acc + (d.startedAt ? Date.now() - d.startedAt : 0) : 0; };
+const fmtClock = ms => { const s = Math.floor(ms / 1000); return Math.floor(s / 3600) + ":" + pad(Math.floor(s % 3600 / 60)) + ":" + pad(s % 60); };
+const fmtDur = ms => { const m = Math.round(ms / 60000), h = Math.floor(m / 60); return h ? h + " h " + pad(m % 60) + " min" : m + " min"; };
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 4000); }
+
+/* ---------- dati online ---------- */
+async function loadAll() {
+  const [t, h] = await Promise.all([
+    sb.from("study_timer").select("*").maybeSingle(),
+    sb.from("study_days").select("day,ms").order("day", { ascending: false })
+  ]);
+  if (t.error || h.error) toast("Non riesco a caricare i dati. Riprova.");
+  const r = t.data;
+  state.day = r ? { date: r.day, acc: Number(r.acc_ms), startedAt: r.started_at ? Date.parse(r.started_at) : null } : null;
+  state.history = (h.data || []).map(x => ({ date: x.day, ms: Number(x.ms) }));
+}
+async function saveTimer() {
+  const d = state.day;
+  const { error } = await sb.from("study_timer").upsert({
+    user_id: user.id, day: d.date, acc_ms: Math.round(d.acc),
+    started_at: d.startedAt ? new Date(d.startedAt).toISOString() : null
+  });
+  if (error) toast("Non salvato: controlla la connessione.");
+}
+function pauseNow() { const d = state.day; if (d && d.startedAt) { d.acc += Date.now() - d.startedAt; d.startedAt = null; } }
+
+/* ---------- schermate ---------- */
+function showView() {
+  $("loginView").hidden = !!user;
+  $("appView").hidden = !user;
+  if (user) { renderHistory(); render(); }
+}
+function render() {
+  if (!user) return;
+  const d = state.day, running = !!(d && d.startedAt), ms = elapsed();
+  $("time").textContent = fmtClock(ms);
+  $("prog").style.strokeDashoffset = C * (1 - (ms % 3600000) / 3600000);
+  $("prog").classList.toggle("run", running);
+  $("state").textContent = !d ? "Pronto?" : running ? "Stai studiando" : "In pausa";
+  $("day").textContent = d ? "Giornata di " + fmtDay(parseKey(d.date), true) : "Nuova giornata di studio";
+  $("btn").textContent = !d ? "Inizia a studiare" : running ? "Pausa" : "Riprendi";
+  $("btn").classList.toggle("pause", running);
+  $("finish").hidden = !d || confirming;
+  $("confirm").hidden = !confirming;
+  const late = d && d.date !== todayKey();
+  $("note").hidden = !late;
+  if (late) $("note").textContent = "Timer avviato il " + fmtDay(parseKey(d.date), true) + ": finché non lo azzeri, tutto il tempo conta per quel giorno.";
+}
+function renderHistory() {
+  const ul = $("history");
+  const byDay = {};
+  state.history.forEach(h => byDay[h.date] = (byDay[h.date] || 0) + h.ms);
+  const days = Object.keys(byDay).sort().reverse();
+  if (!days.length) { ul.innerHTML = '<p class="empty">Qui compariranno i tempi che azzeri. Premi “Inizia a studiare” per cominciare.</p>'; return; }
+  ul.innerHTML = "";
+  days.forEach(k => {
+    const li = document.createElement("li");
+    li.innerHTML = '<span class="d"></span><span class="t"></span>';
+    li.children[0].textContent = fmtDay(parseKey(k));
+    li.children[1].textContent = fmtDur(byDay[k]);
+    ul.appendChild(li);
+  });
+}
+
+/* ---------- azioni ---------- */
+let signup = false;
+const say = (m, info) => { $("err").textContent = m; $("err").classList.toggle("info", !!info); };
+function setMode(s) {
+  signup = s;
+  $("authLead").textContent = s ? "Crea il tuo account per avere un timer e uno storico tutti tuoi." : "Accedi con l’email e la password che usi anche per la libreria.";
+  $("loginBtn").textContent = s ? "Registrati" : "Accedi";
+  $("switchMode").textContent = s ? "Hai già un account? Accedi" : "Non hai un account? Registrati";
+  $("pw2").hidden = !s; $("pw2").required = s;
+  $("pw").autocomplete = s ? "new-password" : "current-password";
+  say("");
+}
+$("switchMode").onclick = () => setMode(!signup);
+$("loginForm").onsubmit = async e => {
+  e.preventDefault(); say("");
+  const email = $("email").value.trim(), password = $("pw").value;
+  if (signup) {
+    if (password.length < 6) return say("La password deve avere almeno 6 caratteri.");
+    if (password !== $("pw2").value) return say("Le due password non coincidono.");
+  }
+  $("loginBtn").disabled = true;
+  const { data, error } = signup ? await sb.auth.signUp({ email, password }) : await sb.auth.signInWithPassword({ email, password });
+  $("loginBtn").disabled = false;
+  if (error) return say(signup ? "Non riesco a registrarti: " + error.message : "Email o password non corretti.");
+  if (!data.session) { setMode(false); return say("Controlla la tua email per confermare l’account, poi accedi. Se avevi già un account, accedi direttamente.", true); }
+  user = data.user; await loadAll(); showView();
+};
+$("logout").onclick = async () => { await sb.auth.signOut(); user = null; state = { day: null, history: [] }; confirming = false; showView(); };
+
+$("btn").onclick = async () => {
+  if (busy) return; busy = true;
+  const d = state.day;
+  if (!d) state.day = { date: todayKey(), acc: 0, startedAt: Date.now() };
+  else if (d.startedAt) pauseNow();
+  else d.startedAt = Date.now();
+  render();
+  await saveTimer(); busy = false;
+};
+$("finishBtn").onclick = () => { confirming = true; render(); };
+$("no").onclick = () => { confirming = false; render(); };
+$("yes").onclick = async () => {
+  if (busy) return; busy = true;
+  pauseNow();
+  const d = state.day;
+  if (d.acc >= 1000) {
+    const { error } = await sb.from("study_days").insert({ day: d.date, ms: Math.round(d.acc) });
+    if (error) { toast("Non salvato: riprova."); await saveTimer(); busy = false; render(); return; }
+    state.history.unshift({ date: d.date, ms: Math.round(d.acc) });
+  }
+  const { error: e2 } = await sb.from("study_timer").delete().eq("user_id", user.id);
+  if (e2) toast("Salvato nello storico, ma il timer non si è azzerato. Riprova.");
+  state.day = null; confirming = false; busy = false;
+  renderHistory(); render();
+};
+
+setInterval(render, 250);
+document.addEventListener("visibilitychange", async () => { if (!document.hidden && user && !busy) { await loadAll(); renderHistory(); render(); } });
+sb.auth.getSession().then(async ({ data: { session } }) => {
+  if (session) { user = session.user; await loadAll(); }
+  showView();
+});
+</script>
+</body>
+</html>
