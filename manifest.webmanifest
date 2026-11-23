@@ -1,0 +1,13 @@
+{
+  "name": "Timer di studio",
+  "short_name": "Studio",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#EFEAFB",
+  "theme_color": "#EFEAFB",
+  "icons": [
+    { "src": "icone/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icone/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
