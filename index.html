@@ -90,7 +90,9 @@ li .t{font-family:Fredoka,system-ui,sans-serif;font-weight:600;color:var(--prima
 .x{background:none;color:var(--muted);font-size:16px;line-height:1;padding:8px 6px;margin:-8px -6px -8px 0}
 .ask{color:var(--muted);font-size:14px;font-weight:700}
 .lnk.danger{color:#D1495B}
-input[type=date]{display:block;text-align:left}
+.datebox{position:relative;height:54px;box-sizing:border-box;margin:12px 0 10px;border:2px solid var(--soft);border-radius:16px;background:var(--surface);display:flex;align-items:center;justify-content:center;overflow:hidden;font-weight:700;text-transform:capitalize}
+.datebox:focus-within{outline:3px solid var(--primary);outline-offset:3px}
+.datebox input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;opacity:0;cursor:pointer}
 @keyframes pop{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion: reduce){.prog,.bar i{transition:none}.cheer-card{animation:none}}
 </style>
@@ -146,10 +148,10 @@ input[type=date]{display:block;text-align:left}
       <div class="center"><div class="time" id="time">0:00:00</div><div class="state" id="state"></div></div>
     </div>
     <button class="main" id="btn"></button>
-    <div class="row" id="finish" hidden><button class="sec" id="finishBtn">Azzera e salva</button></div>
+    <div class="row" id="finish" hidden><button class="sec" id="finishBtn">Termina e salva</button></div>
     <div class="row" id="confirm" hidden>
       <button class="sec" id="no">Annulla</button>
-      <button class="sec go" id="yes">Sì, azzera</button>
+      <button class="sec go" id="yes">Sì, termina</button>
     </div>
     <p class="note" id="note" hidden></p>
     <div class="goal" id="goal">
@@ -172,10 +174,11 @@ input[type=date]{display:block;text-align:left}
     <div class="hrow"><h2>Storico</h2><button class="lnk" id="addBtn">Aggiungi tempo</button></div>
     <div class="goal" id="manual" hidden style="margin:0 0 12px">
       <span class="goal-title">Aggiungi tempo a mano</span>
-      <input id="md" type="date" aria-label="Giorno" style="margin-top:12px">
+      <div class="datebox"><span id="mdText"></span><input id="md" type="date" aria-label="Giorno"></div>
       <div class="goal-edit" style="margin-top:0">
         <input id="mh" type="number" min="0" max="23" inputmode="numeric" placeholder="ore" aria-label="Ore">
         <input id="mm" type="number" min="0" max="59" inputmode="numeric" placeholder="min" aria-label="Minuti">
+        <input id="mx" type="number" min="0" max="59" inputmode="numeric" placeholder="sec" aria-label="Secondi">
         <button class="sec go" id="manualSave">Salva</button>
         <button class="sec" id="manualCancel">Annulla</button>
       </div>
@@ -211,7 +214,7 @@ const parseKey = k => { const [y, m, d] = k.split("-").map(Number); return new D
 const fmtDay = (d, long) => d.toLocaleDateString("it-IT", long ? { weekday: "long", day: "numeric", month: "long" } : { weekday: "short", day: "numeric", month: "short" });
 const elapsed = () => { const d = state.day; return d ? d.acc + (d.startedAt ? Date.now() - d.startedAt : 0) : 0; };
 const fmtClock = ms => { const s = Math.floor(ms / 1000); return Math.floor(s / 3600) + ":" + pad(Math.floor(s % 3600 / 60)) + ":" + pad(s % 60); };
-const fmtDur = ms => { const m = Math.round(ms / 60000), h = Math.floor(m / 60); return h ? h + " h " + pad(m % 60) + " min" : m + " min"; };
+const fmtDur = ms => { const t = Math.round(ms / 1000), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), x = t % 60; return h ? h + " h " + pad(m) + " min " + pad(x) + " s" : m ? m + " min " + pad(x) + " s" : x + " s"; };
 function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 4000); }
 
 /* ---------- dati online ---------- */
@@ -257,7 +260,7 @@ function renderGoal() {
   if (!has) return;
   const tot = dayTotal(goal.day), left = goal.ms - tot;
   $("goalFill").style.width = Math.min(100, tot / goal.ms * 100) + "%";
-  $("goalSub").textContent = left > 0 ? "Mancano " + fmtDur(Math.ceil(left / 60000) * 60000) + "." : "Obiettivo raggiunto!";
+  $("goalSub").textContent = left > 0 ? "Mancano " + fmtDur(left) + "." : "Obiettivo raggiunto!";
   if (left <= 0 && !goal.celebrated) celebrate();
 }
 async function saveTimer() {
@@ -287,24 +290,24 @@ function showView() {
 }
 function render() {
   if (!user || $("appView").hidden) return;
-  const d = state.day, running = !!(d && d.startedAt), ms = elapsed();
+  const d = state.day, running = !!(d && d.startedAt), dk = d ? d.date : todayKey(), ms = dayTotal(dk), had = !d && ms > 0;
   $("time").textContent = fmtClock(ms);
   $("prog").style.strokeDashoffset = C * (1 - (ms % 3600000) / 3600000);
   $("prog").classList.toggle("run", running);
-  $("state").textContent = !d ? "Pronto?" : running ? "Stai studiando" : "In pausa";
-  $("day").textContent = d ? "Giornata di " + fmtDay(parseKey(d.date), true) : "Nuova giornata di studio";
-  $("btn").textContent = !d ? "Inizia a studiare" : running ? "Pausa" : "Riprendi";
+  $("state").textContent = !d ? (had ? "Oggi hai studiato" : "Pronto?") : running ? "Stai studiando" : "In pausa";
+  $("day").textContent = d || had ? "Giornata di " + fmtDay(parseKey(dk), true) : "Nuova giornata di studio";
+  $("btn").textContent = !d ? (had ? "Riprendi a studiare" : "Inizia a studiare") : running ? "Pausa" : "Riprendi";
   $("btn").classList.toggle("pause", running);
   $("finish").hidden = !d || confirming;
   $("confirm").hidden = !confirming;
   const late = d && d.date !== todayKey();
   $("note").hidden = !late;
-  if (late) $("note").textContent = "Timer avviato il " + fmtDay(parseKey(d.date), true) + ": finché non lo azzeri, tutto il tempo conta per quel giorno.";
+  if (late) $("note").textContent = "Timer avviato il " + fmtDay(parseKey(d.date), true) + ": finché non lo termini, tutto il tempo conta per quel giorno.";
   renderGoal();
   renderStats();
 }
 let deletingDay = null, histBusy = false, statsSig = "";
-function fmtShort(ms) { const m = Math.round(ms / 60000), h = Math.floor(m / 60); return h ? h + "h" + (m % 60 ? pad(m % 60) : "") : m + "m"; }
+function fmtShort(ms) { if (ms < 60000) return Math.round(ms / 1000) + "s"; const m = Math.floor(ms / 60000), h = Math.floor(m / 60); return h ? h + "h" + (m % 60 ? pad(m % 60) : "") : m + "m"; }
 function totalsByDay() {
   const m = {};
   state.history.forEach(h => m[h.date] = (m[h.date] || 0) + h.ms);
@@ -334,7 +337,7 @@ function renderStats() {
   for (let i = 6; i >= 0; i--) { const d = at(i); week.push({ d, ms: m[keyOf(d)] || 0 }); }
   let prev = 0;
   for (let i = 7; i <= 13; i++) prev += m[keyOf(at(i))] || 0;
-  const min = ms => Math.floor(ms / 60000);
+  const min = ms => Math.floor(ms / 1000);
   const sig = [todayKey(), s.cur, s.best, s.studiedToday, min(prev)].concat(week.map(w => min(w.ms))).join("|");
   if (sig === statsSig) return;
   statsSig = sig;
@@ -352,7 +355,7 @@ function renderStats() {
     const c = document.createElement("div"); c.className = "col" + (i === 6 ? " today" : "");
     const v = document.createElement("span"); v.className = "v";
     const b = document.createElement("div");
-    const has = w.ms >= 60000;
+    const has = w.ms >= 1000;
     b.className = "b" + (has ? "" : " zero");
     b.style.height = (has ? Math.max(8, Math.round(w.ms / max * 80)) : 4) + "px";
     v.textContent = has ? fmtShort(w.ms) : "";
@@ -360,11 +363,11 @@ function renderStats() {
     l.textContent = w.d.toLocaleDateString("it-IT", { weekday: "short" });
     c.append(v, b, l); bars.appendChild(c);
   });
-  bars.setAttribute("aria-label", "Studio degli ultimi 7 giorni: " + week.map(w => w.d.toLocaleDateString("it-IT", { weekday: "long" }) + " " + (w.ms >= 60000 ? fmtDur(w.ms) : "niente")).join(", "));
+  bars.setAttribute("aria-label", "Studio degli ultimi 7 giorni: " + week.map(w => w.d.toLocaleDateString("it-IT", { weekday: "long" }) + " " + (w.ms >= 1000 ? fmtDur(w.ms) : "niente")).join(", "));
   const lines = ["Media " + fmtDur(total / 7) + " al giorno"];
   if (prev > 0) {
     const diff = total - prev;
-    lines.push(Math.abs(diff) < 60000 ? "Come i 7 giorni precedenti" : (diff > 0 ? "+" : "−") + fmtDur(Math.abs(diff)) + " rispetto ai 7 giorni precedenti");
+    lines.push(Math.abs(diff) < 1000 ? "Come i 7 giorni precedenti" : (diff > 0 ? "+" : "−") + fmtDur(Math.abs(diff)) + " rispetto ai 7 giorni precedenti");
   }
   if (s.best > 0) lines.push("Serie più lunga: " + s.best + (s.best === 1 ? " giorno" : " giorni"));
   $("weekSub").textContent = lines.join("\n");
@@ -374,7 +377,7 @@ function renderHistory() {
   const byDay = {};
   state.history.forEach(h => byDay[h.date] = (byDay[h.date] || 0) + h.ms);
   const days = Object.keys(byDay).sort().reverse();
-  if (!days.length) { ul.innerHTML = '<p class="empty">Qui compariranno i tempi che azzeri. Premi “Inizia a studiare” per cominciare.</p>'; return; }
+  if (!days.length) { ul.innerHTML = '<p class="empty">Qui compariranno i tempi che salvi. Premi “Inizia a studiare” per cominciare.</p>'; return; }
   ul.innerHTML = "";
   days.forEach(k => {
     const li = document.createElement("li");
@@ -464,7 +467,7 @@ $("yes").onclick = async () => {
     state.history.unshift({ date: d.date, ms: Math.round(d.acc) });
   }
   const { error: e2 } = await sb.from("study_timer").delete().eq("user_id", user.id);
-  if (e2) toast("Salvato nello storico, ma il timer non si è azzerato. Riprova.");
+  if (e2) toast("Salvato nello storico, ma il timer non si è chiuso. Riprova.");
   state.day = null; confirming = false; busy = false;
   await loadGoal();
   renderHistory(); render();
@@ -488,19 +491,21 @@ $("goalDel").onclick = async () => {
   goal = null; renderGoal();
   try { localStorage.removeItem(goalKey()); } catch (e) {}
 };
+const showMd = () => { const v = $("md").value; $("mdText").textContent = v ? fmtDay(parseKey(v), true) : "Scegli il giorno"; };
+["input", "change"].forEach(ev => $("md").addEventListener(ev, showMd));
 $("addBtn").onclick = () => {
-  $("md").value = todayKey(); $("md").max = todayKey(); $("mh").value = ""; $("mm").value = "";
+  $("md").value = todayKey(); $("md").max = todayKey(); showMd(); $("mh").value = ""; $("mm").value = ""; $("mx").value = "";
   $("manual").hidden = false; $("addBtn").hidden = true; $("mh").focus();
 };
 $("manualCancel").onclick = () => { $("manual").hidden = true; $("addBtn").hidden = false; };
 $("manualSave").onclick = async () => {
   if (histBusy) return;
-  const day = $("md").value, h = +$("mh").value || 0, m = +$("mm").value || 0;
+  const day = $("md").value, h = +$("mh").value || 0, m = +$("mm").value || 0, x = +$("mx").value || 0;
   if (!day) return toast("Scegli il giorno.");
   if (day > todayKey()) return toast("Non puoi aggiungere tempo nel futuro.");
-  if (h < 0 || h > 23 || m < 0 || m > 59) return toast("Ore da 0 a 23, minuti da 0 a 59.");
-  const ms = Math.round((h * 60 + m) * 60000);
-  if (ms <= 0) return toast("Inserisci almeno un minuto.");
+  if (h < 0 || h > 23 || m < 0 || m > 59 || x < 0 || x > 59) return toast("Ore da 0 a 23, minuti e secondi da 0 a 59.");
+  const ms = Math.round(((h * 60 + m) * 60 + x) * 1000);
+  if (ms <= 0) return toast("Inserisci almeno un secondo.");
   histBusy = true;
   const { error } = await sb.from("study_days").insert({ day, ms });
   histBusy = false;
