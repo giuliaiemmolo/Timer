@@ -8,8 +8,8 @@
 <meta name="theme-color" content="#EFEAFB">
 <title>Timer di studio</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icone/icon-180.png">
-<link rel="icon" type="image/png" href="icone/icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#EFEAFB;--surface:#FFFFFF;--ink:#2B2140;--muted:#7A6F94;--primary:#6E56CF;--run:#3FBF93;--soft:#E3DBF7;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -33,7 +33,7 @@ main{max-width:460px;margin:0 auto;padding:22px 20px 48px}
 .time{font-family:Fredoka,system-ui,sans-serif;font-weight:600;font-size:clamp(40px,13vw,58px);font-variant-numeric:tabular-nums;line-height:1}
 .state{margin-top:8px;color:var(--muted);font-weight:700}
 button{font:inherit;cursor:pointer;border:0}
-button:focus-visible,input:focus-visible{outline:3px solid var(--primary);outline-offset:3px}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--primary);outline-offset:3px}
 .main{width:100%;height:64px;border-radius:32px;background:var(--primary);color:#fff;font-family:Fredoka,system-ui,sans-serif;font-weight:600;font-size:21px}
 .main.pause{background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 2px var(--primary)}
 .main:disabled{opacity:.6}
@@ -44,7 +44,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--primary);outlin
 h1{font-family:Fredoka,system-ui,sans-serif;font-weight:600;font-size:34px;margin:56px 0 8px}
 h2{font-family:Fredoka,system-ui,sans-serif;font-weight:600;font-size:20px;margin:36px 4px 12px}
 .lead{color:var(--muted);margin:0 0 24px}
-input{width:100%;box-sizing:border-box;height:54px;border-radius:16px;border:2px solid var(--soft);background:var(--surface);color:var(--ink);padding:0 16px;font:inherit;margin-bottom:10px}
+input,select{width:100%;box-sizing:border-box;height:54px;border-radius:16px;border:2px solid var(--soft);background:var(--surface);color:var(--ink);padding:0 16px;font:inherit;margin-bottom:10px}
 .err{color:#D1495B;font-weight:700;min-height:22px;margin:4px 4px 12px}
 .err.info{color:var(--ink)}
 .switch{display:block;margin:18px auto 0;background:none;color:var(--primary);font-weight:700;padding:8px}
@@ -54,7 +54,45 @@ li .d{text-transform:capitalize}
 li .t{font-family:Fredoka,system-ui,sans-serif;font-weight:600;color:var(--primary)}
 .empty{color:var(--muted);margin:0 4px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:20px;font-weight:700;max-width:90vw;text-align:center}
-@media (prefers-reduced-motion: reduce){.prog{transition:none}}
+.goal{margin-top:22px;background:var(--surface);border-radius:20px;padding:16px 18px}
+.goal-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.goal-title{font-weight:700}
+.lnk{background:none;color:var(--primary);font-weight:700;padding:6px 2px}
+.bar{height:10px;border-radius:5px;background:var(--soft);margin-top:12px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--run);border-radius:5px;transition:width .4s}
+.goal-sub{margin:8px 0 0;color:var(--muted);font-size:14px}
+.goal-edit{display:flex;gap:8px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.goal-edit input{width:76px;height:46px;margin:0;text-align:center;padding:0 8px}
+.goal-edit .sec{flex:none;padding:0 18px;height:46px}
+.cheer{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(29,23,48,.6);padding:20px;z-index:20}
+.cheer-card{background:var(--run);color:#0F2E24;border-radius:28px;padding:30px 24px 24px;text-align:center;max-width:340px;width:100%;animation:pop .35s ease-out}
+.cheer-emoji{font-size:56px;line-height:1}
+.cheer-card h3{font-family:Fredoka,system-ui,sans-serif;font-weight:600;font-size:36px;margin:10px 0 6px}
+.cheer-card p{margin:0 0 20px;font-weight:700}
+.cheer-card button{height:52px;padding:0 32px;border-radius:26px;background:#0F2E24;color:#fff;font-family:Fredoka,system-ui,sans-serif;font-weight:600;font-size:18px}
+.streak{margin:8px 0 0;color:var(--primary);font-weight:700}
+.week{margin-top:22px;background:var(--surface);border-radius:20px;padding:16px 18px}
+.week-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.week-title{font-weight:700}
+.week-tot{font-family:Fredoka,system-ui,sans-serif;font-weight:600;color:var(--primary)}
+.bars{display:flex;align-items:flex-end;gap:8px;margin-top:16px}
+.col{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px}
+.col .v{font-size:11px;font-weight:700;color:var(--muted);white-space:nowrap;min-height:14px}
+.col .b{width:100%;max-width:30px;border-radius:8px 8px 4px 4px;background:var(--primary)}
+.col .b.zero{background:var(--soft)}
+.col.today .b:not(.zero){background:var(--run)}
+.col .l{font-size:12px;font-weight:700;color:var(--muted);text-transform:capitalize}
+.col.today .l{color:var(--ink)}
+.week-sub{white-space:pre-line}
+.hrow{display:flex;justify-content:space-between;align-items:flex-end;margin:36px 4px 12px}
+.hrow h2{margin:0}
+.rt{display:flex;align-items:center;gap:10px}
+.x{background:none;color:var(--muted);font-size:16px;line-height:1;padding:8px 6px;margin:-8px -6px -8px 0}
+.ask{color:var(--muted);font-size:14px;font-weight:700}
+.lnk.danger{color:#D1495B}
+input[type=date]{display:block;text-align:left}
+@keyframes pop{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion: reduce){.prog,.bar i{transition:none}.cheer-card{animation:none}}
 </style>
 </head>
 <body>
@@ -66,15 +104,40 @@ li .t{font-family:Fredoka,system-ui,sans-serif;font-weight:600;color:var(--prima
       <input id="email" type="email" autocomplete="username" placeholder="Email" required>
       <input id="pw" type="password" autocomplete="current-password" placeholder="Password" required>
       <input id="pw2" type="password" autocomplete="new-password" placeholder="Ripeti la password" hidden>
+      <input id="name" type="text" maxlength="30" autocomplete="given-name" placeholder="Il tuo nome" hidden>
+      <select id="gender" hidden>
+      <option value="" disabled selected>Come vuoi che ti scriva?</option>
+      <option value="f">Al femminile (bravissima)</option>
+      <option value="m">Al maschile (bravissimo)</option>
+      <option value="x">Preferisco non dirlo (bravissim*)</option>
+      </select>
       <p class="err" id="err" role="alert"></p>
       <button class="main" id="loginBtn" type="submit">Accedi</button>
       <button class="switch" id="switchMode" type="button">Non hai un account? Registrati</button>
     </form>
   </section>
 
+  <section id="profileView" hidden>
+    <h1>Facciamo conoscenza</h1>
+    <p class="lead">Il nome compare in alto e serve per i complimenti giusti.</p>
+    <form id="profileForm">
+      <input id="pname" type="text" maxlength="30" autocomplete="given-name" placeholder="Il tuo nome" required>
+      <select id="pgender" required>
+      <option value="" disabled selected>Come vuoi che ti scriva?</option>
+      <option value="f">Al femminile (bravissima)</option>
+      <option value="m">Al maschile (bravissimo)</option>
+      <option value="x">Preferisco non dirlo (bravissim*)</option>
+      </select>
+      <p class="err" id="perr" role="alert"></p>
+      <button class="main" type="submit">Salva</button>
+      <button class="switch" id="pcancel" type="button" hidden>Annulla</button>
+    </form>
+  </section>
+
   <section id="appView" hidden>
-    <div class="top"><p class="app">Timer di studio</p><button class="logout" id="logout">Esci</button></div>
+    <div class="top"><p class="app" id="appTitle">Timer di studio</p><div><button class="logout" id="profileBtn">Profilo</button> <button class="logout" id="logout">Esci</button></div></div>
     <p class="day" id="day"></p>
+    <p class="streak" id="streak" hidden></p>
     <div class="ring">
       <svg viewBox="0 0 200 200" aria-hidden="true">
         <circle class="track" cx="100" cy="100" r="88"/>
@@ -89,10 +152,45 @@ li .t{font-family:Fredoka,system-ui,sans-serif;font-weight:600;color:var(--prima
       <button class="sec go" id="yes">Sì, azzera</button>
     </div>
     <p class="note" id="note" hidden></p>
-    <h2>Storico</h2>
+    <div class="goal" id="goal">
+      <div class="goal-top"><span class="goal-title" id="goalTitle">Hai un obiettivo per oggi?</span><button class="lnk" id="goalBtn">Imposta</button></div>
+      <div class="bar" id="goalBar" hidden><i id="goalFill"></i></div>
+      <p class="goal-sub" id="goalSub" hidden></p>
+      <div class="goal-edit" id="goalEdit" hidden>
+        <input id="gh" type="number" min="0" max="23" inputmode="numeric" placeholder="ore" aria-label="Ore">
+        <input id="gm" type="number" min="0" max="59" inputmode="numeric" placeholder="min" aria-label="Minuti">
+        <button class="sec go" id="goalSave">Salva</button>
+        <button class="sec" id="goalCancel">Annulla</button>
+      </div>
+      <button class="lnk" id="goalDel" hidden>Rimuovi obiettivo</button>
+    </div>
+    <div class="week" id="week" hidden>
+      <div class="week-top"><span class="week-title">Ultimi 7 giorni</span><span class="week-tot" id="weekTot"></span></div>
+      <div class="bars" id="bars" role="img"></div>
+      <p class="goal-sub week-sub" id="weekSub"></p>
+    </div>
+    <div class="hrow"><h2>Storico</h2><button class="lnk" id="addBtn">Aggiungi tempo</button></div>
+    <div class="goal" id="manual" hidden style="margin:0 0 12px">
+      <span class="goal-title">Aggiungi tempo a mano</span>
+      <input id="md" type="date" aria-label="Giorno" style="margin-top:12px">
+      <div class="goal-edit" style="margin-top:0">
+        <input id="mh" type="number" min="0" max="23" inputmode="numeric" placeholder="ore" aria-label="Ore">
+        <input id="mm" type="number" min="0" max="59" inputmode="numeric" placeholder="min" aria-label="Minuti">
+        <button class="sec go" id="manualSave">Salva</button>
+        <button class="sec" id="manualCancel">Annulla</button>
+      </div>
+    </div>
     <ul id="history"></ul>
   </section>
 </main>
+<div class="cheer" id="cheer" hidden>
+  <div class="cheer-card" role="status">
+    <div class="cheer-emoji">🎉</div>
+    <h3 id="cheerTitle">Bravissim*!</h3>
+    <p id="cheerText"></p>
+    <button id="cheerOk">Grazie!</button>
+  </div>
+</div>
 <div class="toast" id="toast" hidden></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
@@ -101,11 +199,14 @@ const SB_URL = "https://sbxamhfvxscyiunnwnlh.supabase.co";
 const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNieGFtaGZ2eHNjeWl1bm53bmxoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ5NTc1MTIsImV4cCI6MjExMDUzMzUxMn0._3G5zfe3QfEwFXOZMSxNhTsA6W6K3jnJH5Zvia33gTQ";
 const sb = supabase.createClient(SB_URL, SB_KEY);
 const C = 553;
+let goal = null, goalEditing = false, editingProfile = false;
+const meta = () => (user && user.user_metadata) || {};
 let user = null, state = { day: null, history: [] }, confirming = false, busy = false, toastT;
 
 const $ = id => document.getElementById(id);
 const pad = n => String(n).padStart(2, "0");
-const todayKey = () => { const d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); };
+const keyOf = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+const todayKey = () => keyOf(new Date());
 const parseKey = k => { const [y, m, d] = k.split("-").map(Number); return new Date(y, m - 1, d); };
 const fmtDay = (d, long) => d.toLocaleDateString("it-IT", long ? { weekday: "long", day: "numeric", month: "long" } : { weekday: "short", day: "numeric", month: "short" });
 const elapsed = () => { const d = state.day; return d ? d.acc + (d.startedAt ? Date.now() - d.startedAt : 0) : 0; };
@@ -119,10 +220,45 @@ async function loadAll() {
     sb.from("study_timer").select("*").maybeSingle(),
     sb.from("study_days").select("day,ms").order("day", { ascending: false })
   ]);
-  if (t.error || h.error) toast("Non riesco a caricare i dati. Riprova.");
+  if (t.error || h.error) { const er = t.error || h.error; console.error(t.error, h.error); toast("Non riesco a caricare i dati: " + er.message); }
   const r = t.data;
   state.day = r ? { date: r.day, acc: Number(r.acc_ms), startedAt: r.started_at ? Date.parse(r.started_at) : null } : null;
   state.history = (h.data || []).map(x => ({ date: x.day, ms: Number(x.ms) }));
+  await loadGoal();
+}
+
+/* ---------- obiettivo del giorno ---------- */
+const goalDay = () => state.day ? state.day.date : todayKey();
+const dayTotal = k => state.history.filter(h => h.date === k).reduce((a, h) => a + h.ms, 0) + (state.day && state.day.date === k ? elapsed() : 0);
+const fmtGoal = ms => { const m = Math.round(ms / 60000), h = Math.floor(m / 60); return h && m % 60 ? h + " h " + (m % 60) + " min" : h ? h + " h" : m + " min"; };
+// l'obiettivo vive solo su questo dispositivo (nessuna tabella su Supabase)
+const goalKey = () => "studio_goal_" + user.id;
+function loadGoal() {
+  try { const g = JSON.parse(localStorage.getItem(goalKey())); goal = g && g.day === goalDay() ? g : null; }
+  catch (e) { goal = null; }
+}
+function saveGoal() {
+  try { localStorage.setItem(goalKey(), JSON.stringify(goal)); } catch (e) {}
+}
+function celebrate() {
+  goal.celebrated = true; saveGoal();
+  $("cheerTitle").textContent = { m: "Bravissimo!", f: "Bravissima!" }[meta().gender] || "Bravissim*!";
+  $("cheerText").textContent = "Hai raggiunto l’obiettivo di studio di oggi: " + fmtGoal(goal.ms) + ".";
+  $("cheer").hidden = false;
+}
+function renderGoal() {
+  const has = !!goal;
+  $("goalTitle").textContent = has ? "Obiettivo di oggi: " + fmtGoal(goal.ms) : "Hai un obiettivo per oggi?";
+  $("goalBtn").textContent = has ? "Modifica" : "Imposta";
+  $("goalBtn").hidden = goalEditing;
+  $("goalEdit").hidden = !goalEditing;
+  $("goalDel").hidden = !has || goalEditing;
+  $("goalBar").hidden = !has; $("goalSub").hidden = !has;
+  if (!has) return;
+  const tot = dayTotal(goal.day), left = goal.ms - tot;
+  $("goalFill").style.width = Math.min(100, tot / goal.ms * 100) + "%";
+  $("goalSub").textContent = left > 0 ? "Mancano " + fmtDur(Math.ceil(left / 60000) * 60000) + "." : "Obiettivo raggiunto!";
+  if (left <= 0 && !goal.celebrated) celebrate();
 }
 async function saveTimer() {
   const d = state.day;
@@ -136,12 +272,21 @@ function pauseNow() { const d = state.day; if (d && d.startedAt) { d.acc += Date
 
 /* ---------- schermate ---------- */
 function showView() {
+  const prof = !!user && (editingProfile || !meta().name || !meta().gender);
   $("loginView").hidden = !!user;
-  $("appView").hidden = !user;
-  if (user) { renderHistory(); render(); }
+  $("profileView").hidden = !prof;
+  $("appView").hidden = !user || prof;
+  statsSig = "";
+  if (prof) {
+    $("pname").value = meta().name || ""; $("pgender").value = meta().gender || "";
+    $("pcancel").hidden = !editingProfile; $("perr").textContent = "";
+  } else if (user) {
+    $("appTitle").textContent = "Timer di " + meta().name;
+    renderHistory(); render();
+  }
 }
 function render() {
-  if (!user) return;
+  if (!user || $("appView").hidden) return;
   const d = state.day, running = !!(d && d.startedAt), ms = elapsed();
   $("time").textContent = fmtClock(ms);
   $("prog").style.strokeDashoffset = C * (1 - (ms % 3600000) / 3600000);
@@ -155,6 +300,74 @@ function render() {
   const late = d && d.date !== todayKey();
   $("note").hidden = !late;
   if (late) $("note").textContent = "Timer avviato il " + fmtDay(parseKey(d.date), true) + ": finché non lo azzeri, tutto il tempo conta per quel giorno.";
+  renderGoal();
+  renderStats();
+}
+let deletingDay = null, histBusy = false, statsSig = "";
+function fmtShort(ms) { const m = Math.round(ms / 60000), h = Math.floor(m / 60); return h ? h + "h" + (m % 60 ? pad(m % 60) : "") : m + "m"; }
+function totalsByDay() {
+  const m = {};
+  state.history.forEach(h => m[h.date] = (m[h.date] || 0) + h.ms);
+  if (state.day) m[state.day.date] = (m[state.day.date] || 0) + elapsed();
+  return m;
+}
+function streaks(m) {
+  const days = Object.keys(m).filter(k => m[k] > 0).sort();
+  let best = 0, run = 0, prev = null;
+  days.forEach(k => {
+    const t = parseKey(k);
+    run = prev && Math.round((t - prev) / 864e5) === 1 ? run + 1 : 1;
+    best = Math.max(best, run); prev = t;
+  });
+  const d = new Date(); d.setHours(0, 0, 0, 0);
+  const studiedToday = (m[keyOf(d)] || 0) > 0;
+  if (!studiedToday) d.setDate(d.getDate() - 1);
+  let cur = 0;
+  while ((m[keyOf(d)] || 0) > 0) { cur++; d.setDate(d.getDate() - 1); }
+  return { cur, best, studiedToday };
+}
+function renderStats() {
+  const m = totalsByDay(), s = streaks(m);
+  const t0 = new Date(); t0.setHours(0, 0, 0, 0);
+  const at = i => { const d = new Date(t0); d.setDate(t0.getDate() - i); return d; };
+  const week = [];
+  for (let i = 6; i >= 0; i--) { const d = at(i); week.push({ d, ms: m[keyOf(d)] || 0 }); }
+  let prev = 0;
+  for (let i = 7; i <= 13; i++) prev += m[keyOf(at(i))] || 0;
+  const min = ms => Math.floor(ms / 60000);
+  const sig = [todayKey(), s.cur, s.best, s.studiedToday, min(prev)].concat(week.map(w => min(w.ms))).join("|");
+  if (sig === statsSig) return;
+  statsSig = sig;
+
+  const st = $("streak");
+  st.hidden = s.cur === 0;
+  if (s.cur) st.textContent = "🔥 " + s.cur + (s.cur === 1 ? " giorno" : " giorni") + " di fila" + (s.studiedToday ? "" : " · studia oggi per continuare");
+
+  const total = week.reduce((a, w) => a + w.ms, 0);
+  $("week").hidden = !state.history.length && total === 0;
+  $("weekTot").textContent = fmtDur(total);
+  const max = Math.max(1, ...week.map(w => w.ms));
+  const bars = $("bars"); bars.innerHTML = "";
+  week.forEach((w, i) => {
+    const c = document.createElement("div"); c.className = "col" + (i === 6 ? " today" : "");
+    const v = document.createElement("span"); v.className = "v";
+    const b = document.createElement("div");
+    const has = w.ms >= 60000;
+    b.className = "b" + (has ? "" : " zero");
+    b.style.height = (has ? Math.max(8, Math.round(w.ms / max * 80)) : 4) + "px";
+    v.textContent = has ? fmtShort(w.ms) : "";
+    const l = document.createElement("span"); l.className = "l";
+    l.textContent = w.d.toLocaleDateString("it-IT", { weekday: "short" });
+    c.append(v, b, l); bars.appendChild(c);
+  });
+  bars.setAttribute("aria-label", "Studio degli ultimi 7 giorni: " + week.map(w => w.d.toLocaleDateString("it-IT", { weekday: "long" }) + " " + (w.ms >= 60000 ? fmtDur(w.ms) : "niente")).join(", "));
+  const lines = ["Media " + fmtDur(total / 7) + " al giorno"];
+  if (prev > 0) {
+    const diff = total - prev;
+    lines.push(Math.abs(diff) < 60000 ? "Come i 7 giorni precedenti" : (diff > 0 ? "+" : "−") + fmtDur(Math.abs(diff)) + " rispetto ai 7 giorni precedenti");
+  }
+  if (s.best > 0) lines.push("Serie più lunga: " + s.best + (s.best === 1 ? " giorno" : " giorni"));
+  $("weekSub").textContent = lines.join("\n");
 }
 function renderHistory() {
   const ul = $("history");
@@ -165,11 +378,37 @@ function renderHistory() {
   ul.innerHTML = "";
   days.forEach(k => {
     const li = document.createElement("li");
-    li.innerHTML = '<span class="d"></span><span class="t"></span>';
-    li.children[0].textContent = fmtDay(parseKey(k));
-    li.children[1].textContent = fmtDur(byDay[k]);
+    const d = document.createElement("span"); d.className = "d"; d.textContent = fmtDay(parseKey(k));
+    const rt = document.createElement("span"); rt.className = "rt";
+    if (deletingDay === k) {
+      const q = document.createElement("span"); q.className = "ask"; q.textContent = "Eliminare?";
+      const no = document.createElement("button"); no.className = "lnk"; no.textContent = "Annulla";
+      no.onclick = () => { deletingDay = null; renderHistory(); };
+      const yes = document.createElement("button"); yes.className = "lnk danger"; yes.textContent = "Elimina";
+      yes.onclick = () => deleteDay(k);
+      rt.append(q, no, yes);
+    } else {
+      const t = document.createElement("span"); t.className = "t"; t.textContent = fmtDur(byDay[k]);
+      const x = document.createElement("button"); x.className = "x"; x.textContent = "✕";
+      x.setAttribute("aria-label", "Elimina " + fmtDay(parseKey(k)));
+      x.onclick = () => { deletingDay = k; renderHistory(); };
+      rt.append(t, x);
+    }
+    li.append(d, rt);
     ul.appendChild(li);
   });
+}
+async function deleteDay(k) {
+  if (histBusy) return; histBusy = true;
+  const { data, error } = await sb.from("study_days").delete().eq("day", k).select("day");
+  histBusy = false; deletingDay = null;
+  if (error || !data || !data.length) {
+    console.error(error);
+    toast("Non riesco a eliminare: controlla il permesso di eliminazione su Supabase.");
+    renderHistory(); return;
+  }
+  state.history = state.history.filter(h => h.date !== k);
+  renderHistory(); render();
 }
 
 /* ---------- azioni ---------- */
@@ -181,25 +420,28 @@ function setMode(s) {
   $("loginBtn").textContent = s ? "Registrati" : "Accedi";
   $("switchMode").textContent = s ? "Hai già un account? Accedi" : "Non hai un account? Registrati";
   $("pw2").hidden = !s; $("pw2").required = s;
+  $("name").hidden = !s; $("name").required = s;
+  $("gender").hidden = !s; $("gender").required = s;
   $("pw").autocomplete = s ? "new-password" : "current-password";
   say("");
 }
 $("switchMode").onclick = () => setMode(!signup);
 $("loginForm").onsubmit = async e => {
   e.preventDefault(); say("");
-  const email = $("email").value.trim(), password = $("pw").value;
+  const email = $("email").value.trim(), password = $("pw").value, name = $("name").value.trim(), gender = $("gender").value;
   if (signup) {
     if (password.length < 6) return say("La password deve avere almeno 6 caratteri.");
     if (password !== $("pw2").value) return say("Le due password non coincidono.");
+    if (!name) return say("Scrivi il tuo nome.");
   }
   $("loginBtn").disabled = true;
-  const { data, error } = signup ? await sb.auth.signUp({ email, password }) : await sb.auth.signInWithPassword({ email, password });
+  const { data, error } = signup ? await sb.auth.signUp({ email, password, options: { data: { name, gender } } }) : await sb.auth.signInWithPassword({ email, password });
   $("loginBtn").disabled = false;
   if (error) return say(signup ? "Non riesco a registrarti: " + error.message : "Email o password non corretti.");
   if (!data.session) { setMode(false); return say("Controlla la tua email per confermare l’account, poi accedi. Se avevi già un account, accedi direttamente.", true); }
   user = data.user; await loadAll(); showView();
 };
-$("logout").onclick = async () => { await sb.auth.signOut(); user = null; state = { day: null, history: [] }; confirming = false; showView(); };
+$("logout").onclick = async () => { await sb.auth.signOut(); user = null; goal = null; editingProfile = false; state = { day: null, history: [] }; confirming = false; deletingDay = null; showView(); };
 
 $("btn").onclick = async () => {
   if (busy) return; busy = true;
@@ -224,7 +466,59 @@ $("yes").onclick = async () => {
   const { error: e2 } = await sb.from("study_timer").delete().eq("user_id", user.id);
   if (e2) toast("Salvato nello storico, ma il timer non si è azzerato. Riprova.");
   state.day = null; confirming = false; busy = false;
+  await loadGoal();
   renderHistory(); render();
+};
+
+$("goalBtn").onclick = () => {
+  const m = goal ? Math.round(goal.ms / 60000) : 0;
+  $("gh").value = goal ? Math.floor(m / 60) : ""; $("gm").value = goal ? m % 60 : "";
+  goalEditing = true; renderGoal(); $("gh").focus();
+};
+$("goalCancel").onclick = () => { goalEditing = false; renderGoal(); };
+$("goalSave").onclick = async () => {
+  const ms = ((+$("gh").value || 0) * 60 + (+$("gm").value || 0)) * 60000;
+  if (ms <= 0) return toast("Inserisci almeno un minuto.");
+  const day = goal ? goal.day : goalDay();
+  goal = { day, ms, celebrated: false };
+  goal.celebrated = dayTotal(day) >= ms; // già superato: niente festa a sorpresa
+  goalEditing = false; renderGoal(); await saveGoal();
+};
+$("goalDel").onclick = async () => {
+  goal = null; renderGoal();
+  try { localStorage.removeItem(goalKey()); } catch (e) {}
+};
+$("addBtn").onclick = () => {
+  $("md").value = todayKey(); $("md").max = todayKey(); $("mh").value = ""; $("mm").value = "";
+  $("manual").hidden = false; $("addBtn").hidden = true; $("mh").focus();
+};
+$("manualCancel").onclick = () => { $("manual").hidden = true; $("addBtn").hidden = false; };
+$("manualSave").onclick = async () => {
+  if (histBusy) return;
+  const day = $("md").value, h = +$("mh").value || 0, m = +$("mm").value || 0;
+  if (!day) return toast("Scegli il giorno.");
+  if (day > todayKey()) return toast("Non puoi aggiungere tempo nel futuro.");
+  if (h < 0 || h > 23 || m < 0 || m > 59) return toast("Ore da 0 a 23, minuti da 0 a 59.");
+  const ms = Math.round((h * 60 + m) * 60000);
+  if (ms <= 0) return toast("Inserisci almeno un minuto.");
+  histBusy = true;
+  const { error } = await sb.from("study_days").insert({ day, ms });
+  histBusy = false;
+  if (error) { console.error(error); return toast("Non salvato: riprova."); }
+  state.history.unshift({ date: day, ms });
+  $("manualCancel").click(); renderHistory(); render();
+};
+$("cheerOk").onclick = () => { $("cheer").hidden = true; };
+
+$("profileBtn").onclick = () => { editingProfile = true; showView(); };
+$("pcancel").onclick = () => { editingProfile = false; showView(); };
+$("profileForm").onsubmit = async e => {
+  e.preventDefault(); $("perr").textContent = "";
+  const name = $("pname").value.trim(), gender = $("pgender").value;
+  if (!name || !gender) { $("perr").textContent = "Compila nome e scelta."; return; }
+  const { data, error } = await sb.auth.updateUser({ data: { name, gender } });
+  if (error) { $("perr").textContent = "Non riesco a salvare: " + error.message; return; }
+  user = data.user; editingProfile = false; showView();
 };
 
 setInterval(render, 250);
